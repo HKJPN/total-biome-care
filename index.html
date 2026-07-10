@@ -103,7 +103,7 @@
     .label {
       margin-top: 8px;
       text-align: center;
-      font-size: clamp(13px, 1.55cqw, 22px);
+      font-size: clamp(12px, 1.35cqw, 20px);
       font-weight: 800;
       line-height: 1.18;
       letter-spacing: -.02em;
@@ -281,11 +281,28 @@
       .manual-button { margin-top: 4px; padding: 5px 6px; font-size: clamp(9px, 2.2cqw, 12px); }
     }
 
+    @media (min-width: 601px) and (max-width: 1100px) {
+      .stage { padding: clamp(18px, 2.6vw, 28px); }
+      .center-figure { width: min(45%, 520px); transform: translate(-50%, -44%); }
+      .card.cooking { left: 5.5%; width: min(17%, 190px); }
+      .card.cosme { right: 8%; top: 9%; width: min(13.6%, 158px); }
+      .card.gut { right: 8%; bottom: 8%; width: min(13.6%, 158px); }
+      .label { font-size: clamp(12px, 1.05vw, 18px); }
+      .manual-button { width: 100%; }
+    }
+
     @media (max-width: 1000px) {
       .center-figure { width: min(48%, 560px); transform: translate(-48%, -44%); }
       .card.cooking { width: min(18%, 210px); }
       .card.cosme, .card.gut { width: min(14.2%, 168px); }
-      .label { font-size: clamp(14px, 1.15vw, 20px); }
+      .label { font-size: clamp(12px, 1.05vw, 18px); }
+    }
+
+    @media (min-width: 601px) and (max-width: 1000px) {
+      .center-figure { width: min(43%, 480px); transform: translate(-50%, -44%); }
+      .card.cooking { left: 4.5%; width: min(16.5%, 176px); }
+      .card.cosme { right: 6%; top: 8%; width: min(13%, 145px); }
+      .card.gut { right: 6%; bottom: 7%; width: min(13%, 145px); }
     }
 
 
@@ -352,7 +369,8 @@
         right: 2%;
       }
       .card-inner {
-        min-height: 100%;
+        min-height: 170px;
+        height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
@@ -365,7 +383,11 @@
       .card.cosme .card-inner {
         border: 3px solid var(--pink);
       }
-      .card img.icon { border-radius: 12px; }
+      .card img.icon {
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 12px;
+      }
       .app-link { border-radius: 16px; }
       .label {
         min-height: 52px;
@@ -381,8 +403,12 @@
       }
       .manual-button {
         width: 100%;
+        min-height: 34px;
         margin-top: 6px;
         padding: 7px 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 12px;
         line-height: 1;
         white-space: nowrap;
@@ -532,7 +558,11 @@
       }
 
       document.querySelectorAll('[data-manual]').forEach((button) => {
-        button.addEventListener('click', () => openManual(button.dataset.manual, button));
+        button.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          openManual(button.dataset.manual, button);
+        });
       });
       languageButtons.forEach((button) => {
         button.addEventListener('click', () => {
