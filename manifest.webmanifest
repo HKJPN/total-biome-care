@@ -1,6 +1,6 @@
 {
   "name": "AI App Launcher",
-  "short_name": "AI Apps",
+  "short_name": "AI Launcher",
   "description": "Launcher for AI apps",
   "start_url": "./",
   "scope": "./",

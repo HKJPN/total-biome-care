@@ -272,6 +272,77 @@
     .manual-content th, .manual-content td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     body.modal-open { overflow: hidden; }
 
+
+    .install-prompt[hidden] { display: none; }
+    .install-prompt {
+      position: fixed;
+      left: 50%;
+      bottom: max(16px, env(safe-area-inset-bottom));
+      z-index: 20;
+      width: min(520px, calc(100vw - 28px));
+      transform: translate(-50%, 18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .28s ease, transform .28s ease;
+    }
+    .install-prompt.is-visible {
+      transform: translate(-50%, 0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .install-prompt__panel {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 22px;
+      background: rgba(255,255,255,.88);
+      box-shadow: 0 14px 34px rgba(0,0,0,.14);
+      backdrop-filter: blur(10px);
+    }
+    .install-prompt__title {
+      margin: 0;
+      font-size: clamp(15px, 2.8vw, 18px);
+      line-height: 1.35;
+      color: #2a2a2a;
+    }
+    .install-prompt__description,
+    .install-prompt__ios-help {
+      margin: 0;
+      color: #555;
+      font-size: clamp(13px, 2.4vw, 15px);
+      line-height: 1.5;
+    }
+    .install-prompt__ios-help[hidden] { display: none; }
+    .install-prompt__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .install-prompt__button {
+      border: 0;
+      border-radius: 999px;
+      padding: 9px 14px;
+      font: inherit;
+      font-weight: 800;
+      line-height: 1.2;
+      cursor: pointer;
+    }
+    .install-prompt__button--primary {
+      background: linear-gradient(135deg, #f2a23a, #e4771d);
+      color: #fff;
+      box-shadow: 0 7px 16px rgba(228,119,29,.28);
+    }
+    .install-prompt__button--secondary {
+      background: rgba(236,233,229,.9);
+      color: #444;
+    }
+    .install-prompt__button:focus-visible {
+      outline: 3px solid rgba(42,42,42,.24);
+      outline-offset: 2px;
+    }
+
     @media (max-width: 620px) {
       .manual-modal { padding: 0; }
       .manual-dialog { width: 100%; max-height: 100vh; height: 100%; border-radius: 0; }
@@ -418,7 +489,24 @@
       .label-mobile { display: inline; }
     }
 
-    
+
+    @media (max-width: 600px) and (orientation: portrait) {
+      .install-prompt {
+        top: 76px;
+        bottom: auto;
+        width: min(420px, calc(100vw - 20px));
+        transform: translate(-50%, -10px);
+      }
+      .install-prompt.is-visible { transform: translate(-50%, 0); }
+      .install-prompt__panel { padding: 12px; border-radius: 18px; }
+      .install-prompt__actions { justify-content: stretch; }
+      .install-prompt__button { flex: 1 1 132px; padding: 9px 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .install-prompt { transition: none; }
+    }
+
   </style>
 </head>
 <body>
@@ -503,6 +591,19 @@
     </section>
   </div>
 
+
+  <section class="install-prompt" id="installPrompt" role="dialog" aria-labelledby="installPromptTitle" hidden>
+    <div class="install-prompt__panel">
+      <h2 class="install-prompt__title" id="installPromptTitle"></h2>
+      <p class="install-prompt__description" id="installPromptDescription"></p>
+      <p class="install-prompt__ios-help" id="installPromptIosHelp" hidden></p>
+      <div class="install-prompt__actions">
+        <button class="install-prompt__button install-prompt__button--primary" type="button" id="installPromptInstall"></button>
+        <button class="install-prompt__button install-prompt__button--secondary" type="button" id="installPromptDismiss"></button>
+      </div>
+    </div>
+  </section>
+
   <script>
     (function () {
       const hint = document.getElementById('launcherHint');
@@ -514,6 +615,130 @@
           : 'Tap or click an icon to open each app';
       }
       document.documentElement.lang = isJapanese ? 'ja' : 'en';
+
+
+      const installCopy = {
+        ja: {
+          title: 'このポータルをアプリとして利用できます',
+          description: 'ホーム画面やデスクトップから、すぐに開けるようになります。',
+          install: 'インストール',
+          dismiss: '今はしない',
+          iosHelp: '共有ボタン ⇧ をタップし、「ホーム画面に追加」を選択してください。'
+        },
+        en: {
+          title: 'Install this portal as an app',
+          description: 'Open it quickly from your Home Screen or desktop.',
+          install: 'Install',
+          dismiss: 'Not now',
+          iosHelp: 'Tap the Share button ⇧, then choose “Add to Home Screen”.'
+        }
+      };
+      const dismissKey = 'installPromptDismissedAt';
+      const dismissInterval = 30 * 24 * 60 * 60 * 1000;
+      const installPrompt = document.getElementById('installPrompt');
+      const installPromptTitle = document.getElementById('installPromptTitle');
+      const installPromptDescription = document.getElementById('installPromptDescription');
+      const installPromptIosHelp = document.getElementById('installPromptIosHelp');
+      const installButton = document.getElementById('installPromptInstall');
+      const dismissButton = document.getElementById('installPromptDismiss');
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      let deferredInstallPrompt = null;
+
+      function isStandalone() {
+        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      }
+
+      function wasRecentlyDismissed() {
+        try {
+          const dismissedAt = Number(localStorage.getItem(dismissKey));
+          return dismissedAt > 0 && Date.now() - dismissedAt < dismissInterval;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function canShowInstallPrompt() {
+        return !isStandalone() && !wasRecentlyDismissed() && (isIOS || deferredInstallPrompt);
+      }
+
+      function renderInstallPrompt() {
+        const copy = installCopy[isJapanese ? 'ja' : 'en'];
+        installPromptTitle.textContent = copy.title;
+        installPromptDescription.textContent = copy.description;
+        installButton.textContent = copy.install;
+        installButton.setAttribute('aria-label', copy.install);
+        dismissButton.textContent = copy.dismiss;
+        dismissButton.setAttribute('aria-label', copy.dismiss);
+        installPromptIosHelp.textContent = copy.iosHelp;
+        installPromptIosHelp.hidden = true;
+      }
+
+      function openInstallModal() {
+        if (!canShowInstallPrompt()) return;
+        renderInstallPrompt();
+        installPrompt.hidden = false;
+        requestAnimationFrame(() => installPrompt.classList.add('is-visible'));
+      }
+
+      function closeInstallModal() {
+        installPrompt.classList.remove('is-visible');
+        window.setTimeout(() => {
+          installPrompt.hidden = true;
+          installPromptIosHelp.hidden = true;
+        }, 280);
+      }
+
+      window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+      });
+
+      window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        closeInstallModal();
+      });
+
+      installButton.addEventListener('click', async () => {
+        const copy = installCopy[isJapanese ? 'ja' : 'en'];
+        if (isIOS && !deferredInstallPrompt) {
+          installPromptIosHelp.textContent = copy.iosHelp;
+          installPromptIosHelp.hidden = false;
+          return;
+        }
+        if (!deferredInstallPrompt) {
+          installPromptIosHelp.textContent = copy.iosHelp;
+          installPromptIosHelp.hidden = false;
+          return;
+        }
+        try {
+          await deferredInstallPrompt.prompt();
+          await deferredInstallPrompt.userChoice;
+        } catch (error) {
+          console.warn('Install prompt failed:', error);
+        } finally {
+          deferredInstallPrompt = null;
+          closeInstallModal();
+        }
+      });
+
+      dismissButton.addEventListener('click', () => {
+        try {
+          localStorage.setItem(dismissKey, String(Date.now()));
+        } catch (error) {}
+        closeInstallModal();
+      });
+
+      const installPromptTimer = window.setTimeout(openInstallModal, 10000);
+      window.addEventListener('pagehide', () => window.clearTimeout(installPromptTimer));
+
+      if ('serviceWorker' in navigator && (window.isSecureContext || location.hostname === 'localhost')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./service-worker.js').catch((error) => {
+            console.warn('Service Worker registration failed:', error);
+          });
+        });
+      }
 
       const manuals = {"gut": {"en": "<h2>📣 Gut Microbiome AI Analyzer</h2>\n<p>Take a photo and let Gut Microbiome AI Analyzer assess how a food or ingredient may affect the gut microbiome. Using images of food packaging, ingredients, meals, supplements, or composition tables, the app evaluates potential gut-health effects based on peer-reviewed research. It provides both an easy-to-understand summary for general users and a detailed evidence report for healthcare professionals and researchers.</p>\n<hr />\n<h2>📖 User Guide: Gut Microbiome AI Analyzer</h2>\n<p>Gut Microbiome AI Analyzer is a web-based tool that uses AI to assess how foods, ingredients, supplements, and related products may affect the gut microbiota and the intestinal environment.</p>\n<h3>📝 How to Use the App</h3>\n<ol>\n<li><p><strong>Review the Terms of Use and select a mode</strong><br />\nRead the Terms of Use and select “I Agree.” Then choose either “Healthcare Professional / Researcher” or “General User,” depending on your intended use.</p>\n</li>\n<li><p><strong>Upload an image</strong><br />\nUse the “Select / Take Photo” button to upload an image of a <strong>food ingredient list</strong>, <strong>food ingredient</strong>, <strong>prepared dish</strong>, supplement, or a composition table from a research paper. The maximum file size is 5 MB. Quantitative assessment may be possible when the image includes ingredient amounts or weights; otherwise, the app may provide an approximate estimate based on the visible information.</p>\n</li>\n<li><p><strong>Start the analysis</strong><br />\nSelect “Start Analysis” and wait for the results. The AI analyzes the ingredients and compares them with information from current research databases. Depending on the request, analysis may take approximately one to five minutes.</p>\n</li>\n</ol>\n<h3>🔍 Analysis Modes</h3>\n<ul>\n<li><p>🟢 <strong>General User Mode</strong></p>\n<ul>\n<li>Summarizes the results in clear, accessible language with minimal technical terminology.</li>\n<li>Uses intuitive indicators such as “Gut Health: ☆☆☆” and “Caution: ⚠” to show potential benefits or concerns and provides brief practical guidance.</li>\n</ul>\n</li>\n<li><p>📊 <strong>Healthcare Professional / Researcher Mode</strong></p>\n<ul>\n<li>Provides a detailed analysis of the evidence level and possible mechanisms of action for each ingredient, based primarily on English-language, peer-reviewed studies, with priority given to human research.</li>\n<li>Generates a reference list containing verified publications with DOI links or URLs.</li>\n</ul>\n</li>\n</ul>\n<h3>⚠️ Important Information</h3>\n<ul>\n<li>This service searches for and presents academic information. It <strong>does not provide medical diagnosis, treatment, or medical advice</strong>.</li>\n<li>Consult a physician before using the information if you have an existing medical condition or any other health concern.</li>\n</ul>\n", "ja": "<h2>📣 Gut Microbiome AI Analyzer</h2>\n<p>写真を撮るだけで腸内環境への影響をAIが解析する「Gut Microbiome AI」！食品パッケージや食材の画像から、査読論文に基づき腸活効果を判定します。一般向けの分かりやすい判定から、専門家向けの詳細なエビデンスレポートまでしています。</p>\n<hr />\n<h2>📖 使用説明書：Gut Microbiome AI Analyzer</h2>\n<p>本アプリは、AIを用いて食品・食材・サプリメント等が「腸内細菌」や「腸内環境」に与える影響を解析するウェブツールです。</p>\n<h3>📝 ご利用手順</h3>\n<ol>\n<li><strong>利用規約の確認とモード選択</strong>\n利用規約を確認して「同意します」にチェックを入れます。その後、ご自身の用途に合わせて「医療関係者・研究者」または「一般の方」のいずれかを選択してください。</li>\n<li><strong>画像のアップロード</strong>\n<strong>食品の成分表示</strong>、<strong>食材</strong>、<strong>料理</strong>、論文の組成表等の写真を「画像を選択 / 撮影」ボタンからアップロードします（※ファイルサイズの上限は5MBです）。重量まで記載された組成表では定量的な評価が可能ですが、画像情報から大まかな推定を行う場合もあります。</li>\n<li><strong>分析開始</strong>\n「分析開始」ボタンを押してお待ちください。AIが成分を解析し、最新の論文データベースと照合を行います（最大1〜5分かかる場合があります）。</li>\n</ol>\n<h3>🔍 2つの解析モードについて</h3>\n<ul>\n<li><p>🟢 <strong>一般の方（簡易）モード</strong></p>\n</li>\n<li><p>専門用語を避けた平易な言葉で結果を要約します。</p>\n</li>\n<li><p>腸活への効果や懸念度を「腸活：☆☆☆」や「注意：⚠」といった直感的なバッジで表示し、簡潔なアドバイスを提供します。</p>\n</li>\n<li><p>📊 <strong>医療関係者・研究者（詳細）モード</strong></p>\n</li>\n<li><p>英語の査読論文（ヒト研究優先）に基づき、成分ごとのエビデンスレベルや作用機序を詳細に解析します。</p>\n</li>\n<li><p>実在確認が取れた参考文献リスト（DOIまたはURL付き）を出力します。</p>\n</li>\n</ul>\n<h3>⚠️ ご利用上の注意点</h3>\n<ul>\n<li>本サービスは学術情報を検索・提示するものであり、<strong>医学的な診断や助言を行うものではありません</strong>。</li>\n<li>持病等がある場合は、必ず医師にご相談のうえご利用ください。</li>\n</ul>\n"}, "cooking": {"en": "<h2>📣 NutriLens AI (AI Meal &amp; Nutrition Analyzer)</h2>\n<p>Simply take a photo of your meal and let NutriLens AI identify the food and analyze its nutritional balance, including calories, protein, fat, carbohydrates, dietary fiber, vitamins, and minerals. General Mode provides an easy-to-understand overview of the dish, its main ingredients, and practical nutrition tips, while Professional Mode generates detailed portion-weight estimates and a comprehensive nutrition report. Make your everyday meals easier—and more enjoyable—to understand at a glance.</p>\n<hr />\n<h2>📖 User Guide: NutriLens AI</h2>\n<p>NutriLens AI is a web-based service that uses AI to analyze photos of food, meals, and beverages and estimate their nutritional composition. It can analyze a wide range of meal images, including set meals, multiple dishes, meals arranged on a tray, boxed lunches, soups, rice, side dishes, desserts, and drinks.</p>\n<h3>📝 How to Use the App</h3>\n<ol>\n<li><p><strong>Select a language</strong><br />\nChoose either “日本語” or “English.” The default language may be selected automatically based on your browser settings.</p>\n</li>\n<li><p><strong>Select an analysis mode</strong><br />\nChoose either “General Mode (Portion Estimate &amp; Overview)” or “Professional Mode (Detailed Analysis &amp; Verification Record),” depending on your needs.</p>\n</li>\n<li><p><strong>Upload an image</strong><br />\nSelect a photo containing food, a meal, or a beverage using the “Select a Meal Photo” button. PNG, JPEG, WebP, and HEIC files are supported. The recommended maximum file size is 5 MB.</p>\n</li>\n<li><p><strong>Start the analysis</strong><br />\nSelect “Analyze Meal” and wait for the results. General Mode provides a concise overview, while Professional Mode performs a more detailed nutritional analysis.</p>\n</li>\n</ol>\n<h3>🔍 Analysis Modes</h3>\n<ul>\n<li><p><strong>General Mode (Portion Estimate &amp; Overview)</strong><br />\nThis mode estimates the name of the dish and identifies approximately three to five visible ingredients. It also provides practical nutrition tips and a rough estimate of dietary fiber content. It is ideal for quickly understanding the main nutritional characteristics of a meal.</p>\n</li>\n<li><p><strong>Professional Mode (Detailed Analysis &amp; Verification Record)</strong><br />\nThis mode identifies the likely ingredients in the image and estimates the weight per serving, the expected margin of error, and the confidence level. It then calculates energy, protein, fat, carbohydrates, dietary fiber, fatty acids, vitamins, minerals, and other nutrients in greater detail. When objects such as spoons, chopsticks, rice bowls, or plate rims are visible, the app may use them as size references to produce more realistic weight estimates.</p>\n</li>\n</ul>\n<h3>📊 Main Information Available in Professional Mode</h3>\n<ul>\n<li>Basis of the estimate, including identified ingredients and estimated weights</li>\n<li>Average confidence level across all identified ingredients</li>\n<li>Energy, protein, fat, and carbohydrates</li>\n<li>Dietary fiber: total, soluble, and insoluble</li>\n<li>Percentage of energy from fat and protein</li>\n<li>Saturated fatty acids, n-3 fatty acids, n-6 fatty acids, and the n-3/n-6 ratio</li>\n<li>Vitamins A, B₁, B₂, C, and D, and folate</li>\n<li>Calcium, phosphorus, the calcium-to-phosphorus ratio, iron, magnesium, zinc, and potassium</li>\n<li>Assumptions used for cooking-related adjustments</li>\n</ul>\n<h3>💾 Saving Results</h3>\n<p>In Professional Mode, analysis results can be saved in Markdown format when needed. Enter the Markdown export password on the results screen and select “Save as MD.” The file name is generated automatically and includes the date and a sequential number.</p>\n<h3>⚠️ Important Information</h3>\n<ul>\n<li>This service is intended to provide general information about meals and nutritional balance. It does not provide medical diagnoses, treatment, or individualized dietary counseling.</li>\n<li>Consult a physician or registered dietitian if you have diabetes, kidney disease, food allergies, dietary restrictions, are pregnant, or otherwise require careful dietary management.</li>\n<li>Weight and nutrient estimates based on images are subject to error. Depth, hidden ingredients, seasonings, oils, sauces, and cooking methods may not be determined accurately from a photograph alone.</li>\n<li>The app cannot analyze images that do not contain food, meals, or beverages. Take a clear photo in which the food is easy to see.</li>\n<li>Uploaded images are used only for analysis. Avoid including personal information or unnecessary background details in the image.</li>\n<li>In Professional Mode, right-clicking, copying, or printing from the results screen may be restricted to protect the content. Use the Markdown export function when you need to retain a record.</li>\n<li>To prevent excessive traffic, repeated use within a short period may be limited. If a usage-limit message appears, wait before trying again.</li>\n</ul>\n", "ja": "<h2>📣 NutriLens AI（AI Meal &amp; Nutrition Analyzer）</h2>\n<p>料理の写真を撮るだけ！AIが食事内容を読み取り、カロリー、たんぱく質、脂質、炭水化物、食物繊維、ビタミン、ミネラルなどの栄養バランスを解析する「NutriLens AI」です。一般向けにはサッと分かる料理名・材料・栄養Tipsを、専門家向けには詳細な推定重量と栄養計算レポートを提供します。毎日の食事を、もっと手軽に、もっと楽しく見える化してみませんか？</p>\n<hr />\n<h2>📖 使用説明書：NutriLens AI</h2>\n<p>「NutriLens AI」は、料理・食事・飲み物の写真をAIが読み取り、栄養バランスを解析するウェブサービスです。定食、複数皿、トレー上の献立、弁当、汁物、ご飯、小鉢、デザート、飲み物など、食事として写っているものを幅広く解析対象として扱います。</p>\n<h3>📝 ご利用手順</h3>\n<ol>\n<li><p><strong>言語の選択</strong><br />\n「日本語」または「English」を選択できます。ブラウザ環境に応じて初期言語が自動選択される場合があります。</p>\n</li>\n<li><p><strong>解析モードの選択</strong><br />\nご自身の用途に合わせて「一般モード（計量・概算）」または「専門家モード（詳細計算＆検証記録）」を選択してください。</p>\n</li>\n<li><p><strong>画像のアップロード</strong><br />\n料理・食事・飲み物が写っている写真を「料理の写真を選択してください」からアップロードします。PNG、JPEG、WebP、HEIC形式に対応しています。ファイルサイズの目安は最大5MBです。</p>\n</li>\n<li><p><strong>分析開始</strong><br />\n「料理を分析する」ボタンを押してお待ちください。一般モードでは短時間で要点を、専門家モードではより詳細な栄養計算を行います。</p>\n</li>\n</ol>\n<h3>🔍 2つの解析モード</h3>\n<ul>\n<li><p><strong>一般モード（計量・概算）</strong><br />\n写真から料理名を推定し、見て分かる材料を3〜5個程度に整理します。あわせて、今日から使える軽い栄養Tipsと、食物繊維量の大まかな推測を表示します。短時間で、食事の特徴をざっくり把握したい場合に適しています。</p>\n</li>\n<li><p><strong>専門家モード（詳細計算＆検証記録）</strong><br />\n写真内の食材を推定し、1人前あたりの重量、誤差幅、信頼度を出力します。さらに、エネルギー、たんぱく質、脂質、炭水化物、食物繊維、脂肪酸、ビタミン、ミネラルなどを詳細に計算します。スプーン、箸、茶わん、皿の縁などが写っている場合は、大きさの基準として活用し、より現実的な重量推定を試みます。</p>\n</li>\n</ul>\n<h3>📊 専門家モードで確認できる主な項目</h3>\n<ul>\n<li>推定根拠（素材と重量）</li>\n<li>全素材の平均信頼度</li>\n<li>エネルギー、たんぱく質、脂質、炭水化物</li>\n<li>食物繊維（合計・水溶性・不溶性）</li>\n<li>脂肪エネルギー比率、たんぱく質エネルギー比率</li>\n<li>飽和脂肪酸、n-3系脂肪酸、n-6系脂肪酸、n-3/n-6比</li>\n<li>ビタミンA、B₁、B₂、C、D、葉酸</li>\n<li>カルシウム、リン、Ca/P比、鉄、マグネシウム、亜鉛、カリウム</li>\n<li>調理補正に関する仮定</li>\n</ul>\n<h3>💾 結果の保存について</h3>\n<p>専門家モードでは、必要に応じて解析結果をMarkdown形式で保存できます。結果画面でMD出力パスワードを入力し、「MD保存」ボタンを押してください。保存ファイル名は日付と連番を含む形式で自動生成されます。</p>\n<h3>⚠️ ご利用上の注意点</h3>\n<ul>\n<li>本サービスは食事内容と栄養バランスに関する一般的な情報提供を目的としており、医学的な診断や治療、個別の栄養指導を行うものではありません。</li>\n<li>糖尿病、腎臓病、食物アレルギー、摂食制限、妊娠中など、食事管理に注意が必要な場合は、必ず医師または管理栄養士にご相談ください。</li>\n<li>画像からの重量・栄養素推定には誤差があります。特に、料理の奥行き、隠れた食材、調味料、油、ソース、調理法は写真だけでは正確に判断できない場合があります。</li>\n<li>料理・食品・飲料が写っていない画像では解析できません。料理がはっきり写るように撮影してください。</li>\n<li>アップロードされた画像は解析のためにのみ使用されます。個人情報や不要な背景が写り込まないようにご注意ください。</li>\n<li>専門家モードでは、コンテンツ保護の観点から結果画面での右クリック、コピー、印刷操作が制限される場合があります。記録が必要な場合はMD保存をご利用ください。</li>\n<li>アクセス集中を防ぐため、短時間に連続した利用には制限がかかる場合があります。制限が表示された場合は、時間をおいて再度お試しください。</li>\n</ul>\n"}, "cosme": {"en": "<h2>📣 Cosmetic AI Analyzer</h2>\n<p>Simply take a photo of a cosmetic product’s full ingredient list and let Cosmetic AI Analyzer assess how the ingredients may affect the skin microbiome. General User Mode explains the function of each ingredient in clear language, while Healthcare Professional / Researcher Mode provides a more technical evaluation based on current scientific literature. Use it to gain a deeper understanding of the ingredients that come into contact with your skin.</p>\n<hr />\n<h2>📖 User Guide: Cosmetic AI Analyzer</h2>\n<p>Cosmetic AI Analyzer is a web-based service that uses AI to read an image of a cosmetic product’s full ingredient list and analyze the role of each ingredient and its potential effects on the resident skin microbiota.</p>\n<h3>📝 How to Use the App</h3>\n<ol>\n<li><p><strong>Review the Terms of Use</strong><br />\nRead the Terms of Use and select “I Agree.”</p>\n</li>\n<li><p><strong>Select your user type</strong><br />\nChoose either “Healthcare Professional / Researcher” or “Other / General User.”</p>\n</li>\n<li><p><strong>Upload an image</strong><br />\nUse the “Select / Take Photo” button to upload a photo of the cosmetic product’s <strong>full ingredient list</strong>, a formulation table, or similar information. The maximum file size is 5 MB.</p>\n</li>\n<li><p><strong>Start the analysis</strong><br />\nSelect “Start Analysis” and wait for the results.</p>\n</li>\n</ol>\n<h3>🔍 Analysis Modes</h3>\n<ul>\n<li><p><strong>Other / General User Mode</strong><br />\nThis mode quickly reads the ingredients and counts those that may affect the resident skin microbiota. It presents the functions and roles of all identified ingredients—such as moisturizers and preservatives—in a clear table.</p>\n</li>\n<li><p><strong>Healthcare Professional / Researcher Mode</strong><br />\nThis mode searches and cross-checks current English-language, peer-reviewed literature and provides a detailed discussion of potential effects on resident microorganisms such as <em>Staphylococcus epidermidis</em>. It also generates ingredient-level assessments using indicators such as 🔴, 🟠, and 🟡, together with supporting references and DOI links.</p>\n</li>\n</ul>\n<h3>⚠️ Important Information</h3>\n<ul>\n<li>This service is intended solely to provide general academic information. It does not provide medical diagnosis or medical advice.</li>\n<li>Consult a qualified physician or dermatologist if you have skin irritation, a skin disorder, or any other skin-related concern.</li>\n<li>Uploaded images are used only for analysis and are deleted after the analysis is completed.</li>\n<li>To protect the content, right-clicking, copying, and printing may be restricted on the results screen.</li>\n<li>To prevent excessive traffic, use is limited to 10 analyses per hour and 100 analyses per day.</li>\n</ul>\n", "ja": "<h2>📣 Cosmetic AI Analyzer</h2>\n<p>化粧品の全成分表示を撮るだけ！AIが皮膚常在菌への影響を解析する「Cosmetic AI Analyzer」です。一般向けには全成分の機能性をわかりやすく解説し、医療関係者向けには最新論文に基づく専門的な評価を提供します。肌に触れる成分への理解をより深めてみませんか？</p>\n<hr />\n<h2>📖 使用説明書：Cosmetic AI Analyzer</h2>\n<p>「Cosmetic AI Analyzer」は、化粧品の「全成分表示」の画像をAIが読み取り、皮膚常在菌への影響や成分の役割を解析するウェブサービスです。</p>\n<h3>📝 ご利用手順</h3>\n<ol>\n<li>利用規約を確認し、「同意します」にチェックを入れます。</li>\n<li>ご自身の属性（「医療関係者・研究者」または「その他（一般）」）を選択します。</li>\n<li>化粧品の<strong>全成分表示</strong>や組成表等の写真を「画像を選択 / 撮影」からアップロードします。ファイルサイズの上限は5MBです。</li>\n<li>「分析開始」ボタンを押して結果をお待ちください。</li>\n</ol>\n<h3>🔍 2つの解析モード</h3>\n<ul>\n<li><strong>その他（一般）モード</strong>\n成分を高速で読み取り、皮膚常在菌に影響を与える可能性のある成分数をカウントします。解析された全成分の「保湿剤」「防腐剤」といった機能性や役割を、表形式でわかりやすく提示します。</li>\n<li><strong>医療関係者・研究者モード</strong>\n最新の英語査読論文データベースを検索・照合し、Staphylococcus epidermidis等の常在菌への影響を詳細に考察します。成分ごとの影響評価（🔴🟠🟡）や、根拠となる参考文献（DOIリンク等）も厳格に出力します。</li>\n</ul>\n<h3>⚠️ ご利用上の注意点</h3>\n<ul>\n<li>本サービスは一般的な学術情報の提供のみを目的としており、医学的な診断やアドバイスを行うものではありません。</li>\n<li>肌トラブル等がある場合は、必ず専門の医師にご相談ください。</li>\n<li>アップロードされた画像は解析のためにのみ使用され、解析完了後に破棄されます。</li>\n<li>コンテンツ保護の観点から、結果画面での右クリック、コピー、印刷操作は制限されています。</li>\n<li>アクセス集中を防ぐため、1時間あたり10回、1日あたり100回までの利用制限が設けられています。</li>\n</ul>\n"}};
       const appTitles = {
