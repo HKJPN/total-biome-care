@@ -343,6 +343,199 @@
       outline-offset: 2px;
     }
 
+
+
+    .ios-install-guide[hidden],
+    .ios-share-callout[hidden] { display: none; }
+    .ios-install-guide {
+      position: fixed;
+      left: 50%;
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      z-index: 30;
+      width: min(720px, calc(100vw - 28px));
+      max-height: min(70vh, 520px);
+      overflow-y: auto;
+      transform: translate(-50%, 18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .28s ease, transform .28s ease;
+      overscroll-behavior: contain;
+    }
+    .ios-install-guide.is-visible {
+      transform: translate(-50%, 0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .ios-install-guide__panel {
+      padding: clamp(14px, 3vw, 20px);
+      border: 1px solid rgba(255,255,255,.95);
+      border-radius: 24px;
+      background: rgba(255,255,255,.93);
+      box-shadow: 0 18px 42px rgba(0,0,0,.16);
+      backdrop-filter: blur(12px);
+      color: #30343a;
+    }
+    .ios-install-guide__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .ios-install-guide__title {
+      margin: 0;
+      font-size: clamp(18px, 3.2vw, 24px);
+      line-height: 1.25;
+      color: #20242a;
+    }
+    .ios-install-guide__close {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(236,233,229,.95);
+      color: #333;
+      font: inherit;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .ios-install-guide__steps {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 0 0 12px;
+    }
+    .ios-install-guide__step {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid rgba(41,105,176,.14);
+      border-radius: 18px;
+      background: rgba(246,250,255,.86);
+    }
+    .ios-install-guide__icon {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 6px 16px rgba(36,93,160,.10);
+      color: #2768b7;
+    }
+    .ios-install-guide__step-text {
+      margin: 0;
+      font-size: clamp(13px, 2.4vw, 15px);
+      font-weight: 750;
+      line-height: 1.45;
+      color: #3d4652;
+    }
+    .ios-install-guide__menu-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 190px;
+      padding: 10px 12px;
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 15px;
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(0,0,0,.09);
+    }
+    .ios-install-guide__plus-icon {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      flex: 0 0 auto;
+      border: 2px solid #2768b7;
+      border-radius: 8px;
+    }
+    .ios-install-guide__plus-icon::before,
+    .ios-install-guide__plus-icon::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 13px;
+      height: 2px;
+      border-radius: 999px;
+      background: #2768b7;
+      transform: translate(-50%, -50%);
+    }
+    .ios-install-guide__plus-icon::after { transform: translate(-50%, -50%) rotate(90deg); }
+    .ios-install-guide__menu-label {
+      font-size: 14px;
+      font-weight: 800;
+      color: #2f3742;
+    }
+    .ios-install-guide__note,
+    .ios-install-guide__browser-help {
+      margin: 8px 0 0;
+      color: #555f6b;
+      font-size: clamp(13px, 2.35vw, 15px);
+      line-height: 1.5;
+    }
+    .ios-install-guide__actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .ios-install-guide__button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 800;
+      line-height: 1.2;
+      cursor: pointer;
+    }
+    .ios-install-guide__button--primary {
+      background: linear-gradient(135deg, #3f82d8, #2163ad);
+      color: #fff;
+      box-shadow: 0 7px 16px rgba(33,99,173,.24);
+    }
+    .ios-install-guide__button--secondary {
+      background: rgba(236,233,229,.92);
+      color: #444;
+    }
+    .ios-install-guide__close:focus-visible,
+    .ios-install-guide__button:focus-visible {
+      outline: 3px solid rgba(39,104,183,.28);
+      outline-offset: 2px;
+    }
+    .ios-share-callout {
+      position: fixed;
+      left: 50%;
+      bottom: calc(116px + env(safe-area-inset-bottom));
+      z-index: 29;
+      transform: translateX(-50%);
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(39,104,183,.96);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 10px 22px rgba(0,0,0,.16);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .ios-share-callout::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 100%;
+      transform: translateX(-50%);
+      border: 8px solid transparent;
+      border-top-color: rgba(39,104,183,.96);
+    }
+
     @media (max-width: 620px) {
       .manual-modal { padding: 0; }
       .manual-dialog { width: 100%; max-height: 100vh; height: 100%; border-radius: 0; }
@@ -490,6 +683,13 @@
     }
 
 
+    @media (max-width: 760px) {
+      .ios-install-guide__steps { grid-template-columns: 1fr; }
+      .ios-install-guide__step { align-items: flex-start; }
+      .ios-install-guide__actions { justify-content: stretch; }
+      .ios-install-guide__button { flex: 1 1 150px; }
+    }
+
     @media (max-width: 600px) and (orientation: portrait) {
       .install-prompt {
         top: 76px;
@@ -503,8 +703,13 @@
       .install-prompt__button { flex: 1 1 132px; padding: 9px 10px; }
     }
 
+    @media (orientation: landscape), (min-width: 700px) {
+      .ios-share-callout { display: none; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      .install-prompt { transition: none; }
+      .install-prompt,
+      .ios-install-guide { transition: none; }
     }
 
   </style>
@@ -604,6 +809,44 @@
     </div>
   </section>
 
+
+
+  <section class="ios-install-guide" id="iosInstallGuide" role="dialog" aria-modal="false" aria-labelledby="iosInstallGuideTitle" hidden>
+    <div class="ios-install-guide__panel">
+      <header class="ios-install-guide__header">
+        <h2 class="ios-install-guide__title" id="iosInstallGuideTitle"></h2>
+        <button class="ios-install-guide__close" type="button" id="iosInstallGuideClose" aria-label="Close iOS install guide">×</button>
+      </header>
+      <div class="ios-install-guide__steps">
+        <div class="ios-install-guide__step">
+          <div class="ios-install-guide__icon" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 34 34" focusable="false">
+              <path d="M11 15.5H8.5a2 2 0 0 0-2 2V27a2 2 0 0 0 2 2h17a2 2 0 0 0 2-2v-9.5a2 2 0 0 0-2-2H23" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M17 21V5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M11.5 10.5 17 5l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <p class="ios-install-guide__step-text" id="iosInstallGuideStep1"></p>
+        </div>
+        <div class="ios-install-guide__step">
+          <div class="ios-install-guide__menu-card" aria-hidden="true">
+            <span class="ios-install-guide__plus-icon"></span>
+            <span class="ios-install-guide__menu-label" id="iosInstallGuideMenuLabel"></span>
+          </div>
+          <p class="ios-install-guide__step-text" id="iosInstallGuideStep2"></p>
+        </div>
+      </div>
+      <p class="ios-install-guide__note" id="iosInstallGuideNote"></p>
+      <p class="ios-install-guide__browser-help" id="iosInstallGuideBrowserHelp"></p>
+      <div class="ios-install-guide__actions">
+        <button class="ios-install-guide__button ios-install-guide__button--primary" type="button" id="iosInstallGuideGotIt"></button>
+        <button class="ios-install-guide__button ios-install-guide__button--secondary" type="button" id="iosInstallGuideNever"></button>
+      </div>
+    </div>
+  </section>
+  <div class="ios-share-callout" id="iosShareCallout" hidden></div>
+
+
   <script>
     (function () {
       const hint = document.getElementById('launcherHint');
@@ -641,12 +884,40 @@
       const installPromptIosHelp = document.getElementById('installPromptIosHelp');
       const installButton = document.getElementById('installPromptInstall');
       const dismissButton = document.getElementById('installPromptDismiss');
-      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const iosGuideDismissKey = 'iosInstallGuideDismissedAt';
+      const iosGuideNeverShowKey = 'iosInstallGuideNeverShow';
       let deferredInstallPrompt = null;
 
+      function isIOSDevice() {
+        return (
+          /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+          (
+            navigator.platform === 'MacIntel' &&
+            navigator.maxTouchPoints > 1
+          )
+        );
+      }
+
+      function isStandaloneMode() {
+        return (
+          window.matchMedia('(display-mode: standalone)').matches ||
+          window.navigator.standalone === true
+        );
+      }
+
+      function isIOSSafari() {
+        const ua = navigator.userAgent;
+        const isIOS = isIOSDevice();
+        const isWebKit = /WebKit/i.test(ua);
+        const isOtherIOSBrowser = /CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo/i.test(ua);
+        return isIOS && isWebKit && !isOtherIOSBrowser;
+      }
+
+      const isIOS = isIOSDevice();
+      const shouldShowIOSInstallGuide = isIOSDevice() && !isStandaloneMode();
+
       function isStandalone() {
-        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        return isStandaloneMode();
       }
 
       function wasRecentlyDismissed() {
@@ -659,7 +930,7 @@
       }
 
       function canShowInstallPrompt() {
-        return !isStandalone() && !wasRecentlyDismissed() && (isIOS || deferredInstallPrompt);
+        return !isIOS && !isStandalone() && !wasRecentlyDismissed() && deferredInstallPrompt;
       }
 
       function renderInstallPrompt() {
@@ -731,6 +1002,112 @@
 
       const installPromptTimer = window.setTimeout(openInstallModal, 10000);
       window.addEventListener('pagehide', () => window.clearTimeout(installPromptTimer));
+
+
+      const iosInstallGuide = document.getElementById('iosInstallGuide');
+      const iosShareCallout = document.getElementById('iosShareCallout');
+      const iosInstallGuideClose = document.getElementById('iosInstallGuideClose');
+      const iosInstallGuideGotIt = document.getElementById('iosInstallGuideGotIt');
+      const iosInstallGuideNever = document.getElementById('iosInstallGuideNever');
+      const iosCopy = {
+        ja: {
+          title: 'ホーム画面に追加',
+          step1: '1. 画面下部またはブラウザメニューの共有アイコンをタップ',
+          step2: '2. メニューから「ホーム画面に追加」を選択してください',
+          menuLabel: 'ホーム画面に追加',
+          note: 'ホーム画面のアイコンから、アプリのようにすぐ起動できます。',
+          gotIt: 'わかりました',
+          never: '今後表示しない',
+          closeLabel: 'ホーム画面に追加案内を閉じる',
+          safariCallout: 'まず、この共有アイコンをタップ',
+          genericHelp: 'ブラウザの共有ボタンまたはメニューを開いてください'
+        },
+        en: {
+          title: 'Add to Home Screen',
+          step1: '1. Tap the Share icon at the bottom of the screen or in the browser menu',
+          step2: '2. Select “Add to Home Screen” from the menu',
+          menuLabel: 'Add to Home Screen',
+          note: 'You can then open this portal directly from its Home Screen icon.',
+          gotIt: 'Got it',
+          never: 'Do not show again',
+          closeLabel: 'Close Add to Home Screen guide',
+          safariCallout: 'First, tap the Share icon',
+          genericHelp: 'Open your browser’s Share button or menu'
+        }
+      };
+
+      function wasIOSGuideRecentlyDismissed() {
+        try {
+          const dismissedAt = Number(localStorage.getItem(iosGuideDismissKey));
+          return dismissedAt > 0 && Date.now() - dismissedAt < dismissInterval;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function wasIOSGuideNeverShown() {
+        try {
+          return localStorage.getItem(iosGuideNeverShowKey) === 'true';
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function canShowIOSInstallGuide() {
+        return shouldShowIOSInstallGuide && !wasIOSGuideRecentlyDismissed() && !wasIOSGuideNeverShown();
+      }
+
+      function renderIOSInstallGuide() {
+        const copy = iosCopy[isJapanese ? 'ja' : 'en'];
+        document.getElementById('iosInstallGuideTitle').textContent = copy.title;
+        document.getElementById('iosInstallGuideStep1').textContent = copy.step1;
+        document.getElementById('iosInstallGuideStep2').textContent = copy.step2;
+        document.getElementById('iosInstallGuideMenuLabel').textContent = copy.menuLabel;
+        document.getElementById('iosInstallGuideNote').textContent = copy.note;
+        document.getElementById('iosInstallGuideBrowserHelp').textContent = isIOSSafari() ? '' : copy.genericHelp;
+        iosShareCallout.textContent = copy.safariCallout;
+        iosInstallGuideGotIt.textContent = copy.gotIt;
+        iosInstallGuideNever.textContent = copy.never;
+        iosInstallGuideClose.setAttribute('aria-label', copy.closeLabel);
+      }
+
+      function openIOSInstallGuide() {
+        if (!canShowIOSInstallGuide()) return;
+        renderIOSInstallGuide();
+        iosInstallGuide.hidden = false;
+        if (isIOSSafari()) iosShareCallout.hidden = false;
+        requestAnimationFrame(() => iosInstallGuide.classList.add('is-visible'));
+      }
+
+      function closeIOSInstallGuide() {
+        iosInstallGuide.classList.remove('is-visible');
+        iosShareCallout.hidden = true;
+        window.setTimeout(() => {
+          iosInstallGuide.hidden = true;
+        }, 280);
+      }
+
+      function dismissIOSInstallGuide() {
+        try {
+          localStorage.setItem(iosGuideDismissKey, String(Date.now()));
+        } catch (error) {}
+        closeIOSInstallGuide();
+      }
+
+      iosInstallGuideClose.addEventListener('click', dismissIOSInstallGuide);
+      iosInstallGuideGotIt.addEventListener('click', dismissIOSInstallGuide);
+      iosInstallGuideNever.addEventListener('click', () => {
+        try {
+          localStorage.setItem(iosGuideNeverShowKey, 'true');
+        } catch (error) {}
+        closeIOSInstallGuide();
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !iosInstallGuide.hidden) dismissIOSInstallGuide();
+      });
+
+      const iosInstallGuideTimer = window.setTimeout(openIOSInstallGuide, 10000);
+      window.addEventListener('pagehide', () => window.clearTimeout(iosInstallGuideTimer));
 
       if ('serviceWorker' in navigator && (window.isSecureContext || location.hostname === 'localhost')) {
         window.addEventListener('load', () => {
