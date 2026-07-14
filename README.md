@@ -1,4 +1,5 @@
 # AI App Launcher (Total Biome Care)
+[🇯🇵 日本語](README-ja.md) or [🇺🇸 English](README.md) 
 This app integrates three AI applications that support your beauty and health from the inside out.
 
 - 🥗 [NutriLens AI: Smartly manage the nutritional content of your meals](https://github.com/HKJPN/total-biome-care/blob/main/docs/ReadmeNutriLens.md)
