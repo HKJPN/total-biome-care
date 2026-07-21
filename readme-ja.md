@@ -8,4 +8,4 @@
 - 💄 [**Cosmetic AI Analyzer** で自分に合うコスメを発見](https://github.com/HKJPN/total-biome-care/blob/main/docs/ReadmeCosmetic-ja.md)
 
 # 即実行可能
-ブラウザから即実行可能　👉 **https://hkjpn.github.io/markdown-editor/**
+ブラウザから即実行可能　👉 **https://hkjpn.github.io/total-biome-care/**
