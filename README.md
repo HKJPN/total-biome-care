@@ -12,6 +12,21 @@ Try it instantly in your browser. 👉 **https://hkjpn.github.io/total-biome-car
 
  # License ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
  
-  This app launcher is licensed under the MIT License.<br>
- **Disclaimer:**<br>
- The applications accessed via this launcher are closed-source and proprietary. They are excluded from this MIT License. **Any commercial use of the linked applications is prohibited.**
+The **AI App Launcher (Total Biome Care)** and the source files contained in this repository are licensed under the [MIT License](LICENSE).
+
+The MIT License applies **only to the launcher and files contained in this repository**.
+
+# Linked Applications
+
+The following applications and services accessed through this launcher are separate, closed-source, proprietary applications:
+
+* NutriLens AI
+* Gut Microbiome AI
+* Cosmetic AI Analyzer
+
+These linked applications are **not covered by the MIT License** of this repository.
+
+They are provided subject to their separate [Terms of Use](TERMS.md). Commercial use of the linked applications requires prior written permission from the respective copyright holder or operator.
+
+Please note that the MIT License permits commercial use of the **launcher itself**. This permission does not grant any right to commercially use the linked proprietary applications or services.
+
