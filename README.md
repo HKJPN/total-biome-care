@@ -10,8 +10,8 @@ This app integrates three AI applications that support your beauty and health fr
 
 Try it instantly in your browser. 👉 **https://hkjpn.github.io/total-biome-care/**
 
- # License
+ # License ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
  
-  This app launcher is licensed under the [MIT License](https://www.google.com/search?q=LICENSE).<br>
+  This app launcher is licensed under the MIT License.<br>
  **Disclaimer:**<br>
  The applications accessed via this launcher are closed-source and proprietary. They are excluded from this MIT License. **Any commercial use of the linked applications is prohibited.**
