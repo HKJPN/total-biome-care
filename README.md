@@ -12,6 +12,6 @@ Try it instantly in your browser. 👉 **https://hkjpn.github.io/total-biome-car
 
  # License
  
-  This app launcher is licensed under the [MIT License](https://www.google.com/search?q=LICENSE).
- **Disclaimer:**
+  This app launcher is licensed under the [MIT License](https://www.google.com/search?q=LICENSE).<br>
+ **Disclaimer:**<br>
  The applications accessed via this launcher are closed-source and proprietary. They are excluded from this MIT License. **Any commercial use of the linked applications is prohibited.**
