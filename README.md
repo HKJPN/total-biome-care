@@ -16,7 +16,7 @@ The **AI App Launcher (Total Biome Care)** and the source files contained in thi
 
 The MIT License applies **only to the launcher and files contained in this repository**.
 
-# Linked Applications
+## Linked Applications
 
 The following applications and services accessed through this launcher are separate, closed-source, proprietary applications:
 
