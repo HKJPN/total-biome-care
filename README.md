@@ -1,4 +1,4 @@
-# AI App Launcher (Total Biome Care)
+# AI App Launcher (Total Biome Care)<br>
 [🇯🇵 日本語](https://github.com/HKJPN/total-biome-care/blob/main/readme-ja.md) or [🇺🇸 English](https://github.com/HKJPN/total-biome-care/blob/main/README.md) 
 This app integrates three AI applications that support your beauty and health from the inside out.
 
