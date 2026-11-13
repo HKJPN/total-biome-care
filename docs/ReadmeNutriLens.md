@@ -1,14 +1,14 @@
 
 
-## 📣 NutriLens AI (AI Meal & Nutrition Analyzer)
+## 📣 Pic2Healthy (AI Meal & Nutrition Analyzer)
 
-Simply take a photo of your meal and let NutriLens AI identify the food and analyze its nutritional balance, including calories, protein, fat, carbohydrates, dietary fiber, vitamins, and minerals. General Mode provides an easy-to-understand overview of the dish, its main ingredients, and practical nutrition tips, while Professional Mode generates detailed portion-weight estimates and a comprehensive nutrition report. Make your everyday meals easier—and more enjoyable—to understand at a glance.
+Simply take a photo of your meal and let Pic2Healthy identify the food and analyze its nutritional balance, including calories, protein, fat, carbohydrates, dietary fiber, vitamins, and minerals. General Mode provides an easy-to-understand overview of the dish, its main ingredients, and practical nutrition tips, while Professional Mode generates detailed portion-weight estimates and a comprehensive nutrition report. Make your everyday meals easier—and more enjoyable—to understand at a glance.
 
 ---
 
-## 📖 User Guide: NutriLens AI
+## 📖 User Guide: Pic2Healthy
 
-NutriLens AI is a web-based service that uses AI to analyze photos of food, meals, and beverages and estimate their nutritional composition. It can analyze a wide range of meal images, including set meals, multiple dishes, meals arranged on a tray, boxed lunches, soups, rice, side dishes, desserts, and drinks.
+Pic2Healthy is a web-based service that uses AI to analyze photos of food, meals, and beverages and estimate their nutritional composition. It can analyze a wide range of meal images, including set meals, multiple dishes, meals arranged on a tray, boxed lunches, soups, rice, side dishes, desserts, and drinks.
 
 1. **Select a language**  
    Choose either “日本語” or “English.” The default language may be selected automatically based on your browser settings.
